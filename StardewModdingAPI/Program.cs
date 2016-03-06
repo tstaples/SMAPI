@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Inheritance;
 using StardewModdingAPI.Inheritance.Menus;
@@ -341,6 +342,48 @@ namespace StardewModdingAPI
             int loadedMods = 0;
             foreach (string ModPath in ModPaths)
             {
+                foreach (String modPath in Directory.GetDirectories(ModPath))
+                {
+                    var modJsonFiles = Directory.GetFiles(modPath, "*.json");
+                    if (modJsonFiles.Any())
+                    {
+                        if (modJsonFiles.Length > 1)
+                        {
+                            StardewModdingAPI.Log.Error("Error, mod root should only contain one json file ({0})", modPath);
+                            continue;
+                        }
+                        var modJsonFile = modJsonFiles.First();
+
+                        StardewModdingAPI.Log.Verbose("Loading mod JSON: {0}", modJsonFile);
+                        using (StreamReader r = new StreamReader(modJsonFile))
+                        {
+                            string json = r.ReadToEnd();
+                            ModInfo modInfo = JsonConvert.DeserializeObject<ModInfo>(json);
+                            modInfo.ModRoot = modPath;
+
+                            if (modInfo != null)
+                            {
+                                if (modInfo.HasDLL)
+                                {
+                                    StardewModdingAPI.Log.Verbose("Loading Mod DLL...");
+                                    if (modInfo.LoadModDLL())
+                                    {
+                                        StardewModdingAPI.Log.Success("Loaded Mod DLL: {0} by {1} - Version {2} | Description: {3}",
+                                            modInfo.ModInstance.Name, modInfo.ModInstance.Authour, modInfo.ModInstance.Version, modInfo.ModInstance.Description);
+                                    }
+                                    else
+                                    {
+                                        StardewModdingAPI.Log.Error("Failed to load Mod DLL.");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //Support for older mods here
+                    }
+                }
                 foreach (String s in Directory.GetFiles(ModPath, "*.dll"))
                 {
                     if (s.Contains("StardewInjector"))
@@ -368,7 +411,7 @@ namespace StardewModdingAPI
                     {
                         StardewModdingAPI.Log.Error("Failed to load mod '{0}'. Exception details:\n" + ex, s);
                     }
-                }
+                }                 
             }
             StardewModdingAPI.Log.Success("LOADED {0} MODS", loadedMods);
         }
