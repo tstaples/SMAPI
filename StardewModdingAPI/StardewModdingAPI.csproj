@@ -37,16 +37,16 @@
     <TargetFrameworkProfile />
   </PropertyGroup>
   <Choose>
-	<When Condition="'$(SteamInstallPath)' != ''">
-	  <PropertyGroup>
-		<SteamPath>$(SteamInstallPath)</SteamPath>
+    <When Condition="'$(SteamInstallPath)' != ''">
+      <PropertyGroup>
+        <SteamPath>$(SteamInstallPath)</SteamPath>
       </PropertyGroup>
-	</When>
-  <Otherwise>
-	<PropertyGroup>
-	  <SteamPath>..\..\..\..\Games\SteamLibrary</SteamPath>
-    </PropertyGroup>
-	</Otherwise>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <SteamPath>..\..\..\..\Games\SteamLibrary</SteamPath>
+      </PropertyGroup>
+    </Otherwise>
   </Choose>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -90,9 +90,25 @@
     <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Stardew Valley, Version=1.0.5905.5747, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SteamPath)\steamapps\common\Stardew Valley\Stardew Valley.exe</HintPath>
+      <HintPath>D:\Games\steamapps\common\Stardew Valley\Stardew Valley.exe</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -105,7 +121,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="xTile, Version=2.0.4.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SteamPath)\steamapps\common\Stardew Valley\xTile.dll</HintPath>
+      <HintPath>D:\Games\steamapps\common\Stardew Valley\xTile.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +158,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.ico" />
@@ -158,6 +175,9 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Cecil\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

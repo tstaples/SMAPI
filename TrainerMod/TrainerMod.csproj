@@ -34,16 +34,16 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <Choose>
-	<When Condition="'$(SteamInstallPath)' != ''">
-	  <PropertyGroup>
-		<SteamPath>$(SteamInstallPath)</SteamPath>
+    <When Condition="'$(SteamInstallPath)' != ''">
+      <PropertyGroup>
+        <SteamPath>$(SteamInstallPath)</SteamPath>
       </PropertyGroup>
-	</When>
-  <Otherwise>
-	<PropertyGroup>
-	  <SteamPath>..\..\..\..\Games\SteamLibrary</SteamPath>
-    </PropertyGroup>
-	</Otherwise>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <SteamPath>..\..\..\..\Games\SteamLibrary</SteamPath>
+      </PropertyGroup>
+    </Otherwise>
   </Choose>
   <ItemGroup>
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
@@ -53,8 +53,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Stardew Valley">
-      <HintPath>$(SteamPath)\steamapps\common\Stardew Valley\Stardew Valley.exe</HintPath>
-      <Private>False</Private>
+      <HintPath>D:\Games\steamapps\common\Stardew Valley\Stardew Valley.exe</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -65,8 +64,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="xTile">
-      <HintPath>$(SteamPath)\steamapps\common\Stardew Valley\xTile.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>D:\Games\steamapps\common\Stardew Valley\xTile.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Mono.Cecil;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Inheritance;
 using StardewModdingAPI.Inheritance.Menus;
@@ -49,10 +50,11 @@ namespace StardewModdingAPI
             {
                 ConfigureUI();
                 ConfigurePaths();
+                ConfigureMethodInjection();
                 ConfigureInjector();
                 ConfigureSDV();
 
-                GameRunInvoker();
+                //GameRunInvoker();
             }
             catch (Exception e)
             {
@@ -62,6 +64,20 @@ namespace StardewModdingAPI
 
             StardewModdingAPI.Log.Comment("The API will now terminate. Press any key to continue...");
             Console.ReadKey();
+        }
+    
+        /// <summary>
+        /// Configures Mono.Cecil injections
+        /// </summary>
+        private static void ConfigureMethodInjection()
+        {
+            AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(Constants.ExecutionPath + "\\Stardew Valley.exe");
+            TypeDefinition type = assembly.MainModule.Types.FirstOrDefault(n => n.FullName == "StardewValley.FarmAnimal");
+            //if (type != null)
+            //{
+                MethodDefinition foundMethod = type.Methods.FirstOrDefault(m => m.Name == "eatGrass");
+                Mono.Cecil.Cil.ILProcessor worker = foundMethod.Body.GetILProcessor();
+            //}
         }
 
         /// <summary>
