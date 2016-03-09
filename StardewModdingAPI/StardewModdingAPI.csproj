@@ -145,6 +145,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="Helpers\CecilContext.cs" />
     <Compile Include="Helpers\CecilHelper.cs" />
+    <Compile Include="Helpers\ReflectionHelper.cs" />
     <Compile Include="Inheritance\ItemStackChange.cs" />
     <Compile Include="Inheritance\Menus\SBobberBar.cs" />
     <Compile Include="Inheritance\Menus\SGameMenu.cs" />

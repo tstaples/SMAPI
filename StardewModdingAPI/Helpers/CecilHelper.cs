@@ -11,7 +11,8 @@ namespace StardewModdingAPI.Helpers
 {
     public static class CecilHelper
     {
-
+        //System.Void StardewValley.Game1::.ctor()
+        
         private static void InjectMethod(ILProcessor ilProcessor, Instruction target, MethodReference method)
         {
             Instruction callEnterInstruction = ilProcessor.Create(OpCodes.Call, method);
@@ -25,6 +26,13 @@ namespace StardewModdingAPI.Helpers
                 InjectMethod(ilProcessor, target, method);
             }
         }
+
+
+       // public void ReplaceInstruction(ILProcessor processor, OpCode opcode, string oldOperand, string newOperand)
+        //{
+            //var instructions = processor.Body.Instructions.Where(i => i.OpCode == opcode && i.Operand == oldOperand);
+           // processor.Create()
+        //}
 
         public static void InjectEntryMethod(CecilContext stardewContext, CecilContext smapiContext, string injecteeType, string injecteeMethod, 
             string injectedType, string injectedMethod)

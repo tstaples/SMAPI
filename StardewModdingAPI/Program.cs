@@ -72,7 +72,11 @@ namespace StardewModdingAPI
         private static void ConfigureMethodInjection()
         {
             StardewContext = new CecilContext(CecilContextType.Stardew);
-            //SmapiContext = new CecilContext(CecilContextType.SMAPI);
+            SmapiContext = new CecilContext(CecilContextType.SMAPI);
+
+            //StardewContext.ReplaceMethodInstruction(OpCodes.Newobj, "System.Void StardewValley.Game1::.ctor()")
+            var test = StardewContext.GetMethodILProcessor("StardewValley.Program", "Main");
+            StardewContext.GetTypeDefinition("StardewValley.Game1");
         }
 
         private static void WeaveOnEnterMethod(Mono.Cecil.Cil.ILProcessor ilProcessor, Instruction target, MethodReference callback)
@@ -143,11 +147,11 @@ namespace StardewModdingAPI
             StardewModdingAPI.Log.Info("Initializing SDV Assembly...");
 
             // Load in the assembly - ignores security
-            //StardewAssembly = Assembly.UnsafeLoadFrom(Constants.ExecutionPath + "\\Stardew Valley.exe");
-            StardewAssembly = Assembly.Load(StardewContext.ModifiedAssembly.GetBuffer());
+            StardewAssembly = Assembly.UnsafeLoadFrom(Constants.ExecutionPath + "\\Stardew Valley.exe");
+            //StardewAssembly = Assembly.Load(StardewContext.ModifiedAssembly.GetBuffer());
             StardewProgramType = StardewAssembly.GetType("StardewValley.Program", true);
             StardewGameInfo = StardewProgramType.GetField("gamePtr");
-
+            
             // Change the game's version
             StardewModdingAPI.Log.Verbose("Injecting New SDV Version...");
             Game1.version += string.Format("-Z_MODDED | SMAPI {0}", Constants.VersionString);
@@ -253,25 +257,10 @@ namespace StardewModdingAPI
                 StardewForm.Closing += StardewForm_Closing;
 
                 ready = true;
-                
-                StardewGameInfo.SetValue(StardewProgramType, gamePtr);
-                gamePtr.Run();
 
-                #region deprecated
-                if (false)
-                {
-                    //Nope, I can't get it to work. I depend on Game1 being an SGame, and can't cast a parent to a child
-                    //I'm leaving this here in case the community is interested
-                    //StardewInjectorMod.Entry(true);
-                    Type gt = StardewAssembly.GetType("StardewValley.Game1", true);
-                    gamePtr = (SGame)Activator.CreateInstance(gt);
-
-                    ready = true;
-
-                    StardewGameInfo.SetValue(StardewProgramType, gamePtr);
-                    gamePtr.Run();
-                }
-                #endregion
+                StardewAssembly.EntryPoint.Invoke(null, new object[] { new string[] { } });
+                //StardewGameInfo.SetValue(StardewProgramType, gamePtr);
+                gamePtr.Run();                
             }
             catch (Exception ex)
             {

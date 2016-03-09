@@ -48,13 +48,12 @@ namespace StardewModdingAPI.Helpers
         public CecilContext(CecilContextType contextType)
         {
             ContextType = contextType;
-
             if (ContextType == CecilContextType.SMAPI)
                 _assemblyDefinition = AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location);
             else
                 _assemblyDefinition = AssemblyDefinition.ReadAssembly(Constants.StardewExePath);
         }
-
+        
         public ILProcessor GetMethodILProcessor(string type, string method)
         {
             if (_assemblyDefinition == null)
@@ -64,7 +63,7 @@ namespace StardewModdingAPI.Helpers
                 throw new ArgumentNullException("Both type and method must be set");
 
             Mono.Cecil.Cil.ILProcessor ilProcessor = null;
-            TypeDefinition typeDef = _assemblyDefinition.MainModule.Types.FirstOrDefault(n => n.FullName == type);
+            TypeDefinition typeDef = GetTypeDefinition(type);
             if (typeDef != null)
             {
                 MethodDefinition methodDef = typeDef.Methods.FirstOrDefault(m => m.Name == method);
@@ -77,6 +76,31 @@ namespace StardewModdingAPI.Helpers
             return ilProcessor;
         }
 
+        public TypeDefinition GetTypeDefinition(string type)
+        {
+            if (_assemblyDefinition == null)
+                throw new Exception("ERROR Assembly not properly read. Cannot parse");
+
+            if (string.IsNullOrWhiteSpace(type))
+                throw new ArgumentNullException("Both type and method must be set");
+
+            TypeDefinition typeDef = _assemblyDefinition.MainModule.Types.FirstOrDefault(n => n.FullName == type);
+            return typeDef;
+        }
+
+        public MethodDefinition GetMethodDefinition(string type, string method)
+        {
+            MethodDefinition methodDef = null;
+            TypeDefinition typeDef = GetTypeDefinition(type);
+
+            if (typeDef != null)
+            {
+                methodDef = typeDef.Methods.FirstOrDefault(m => m.Name == method);                
+            }
+
+            return methodDef;
+        }
+        
         public MethodInfo GetSMAPIMethodReference(string type, string method)
         {
             if (_assemblyDefinition == null)
