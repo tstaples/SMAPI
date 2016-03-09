@@ -53,9 +53,8 @@ namespace StardewModdingAPI
                 ConfigureUI();
                 ConfigurePaths();
                 ConfigureMethodInjection();
-                //ConfigureSDV();
-
-                //GameRunInvoker();
+                ConfigureSDV();
+                GameRunInvoker();
             }
             catch (Exception e)
             {
@@ -73,7 +72,7 @@ namespace StardewModdingAPI
         private static void ConfigureMethodInjection()
         {
             StardewContext = new CecilContext(CecilContextType.Stardew);
-            SmapiContext = new CecilContext(CecilContextType.SMAPI);
+            //SmapiContext = new CecilContext(CecilContextType.SMAPI);
         }
 
         private static void WeaveOnEnterMethod(Mono.Cecil.Cil.ILProcessor ilProcessor, Instruction target, MethodReference callback)
@@ -144,7 +143,8 @@ namespace StardewModdingAPI
             StardewModdingAPI.Log.Info("Initializing SDV Assembly...");
 
             // Load in the assembly - ignores security
-            StardewAssembly = Assembly.UnsafeLoadFrom(Constants.ExecutionPath + "\\Stardew Valley.exe");
+            //StardewAssembly = Assembly.UnsafeLoadFrom(Constants.ExecutionPath + "\\Stardew Valley.exe");
+            StardewAssembly = Assembly.Load(StardewContext.ModifiedAssembly.GetBuffer());
             StardewProgramType = StardewAssembly.GetType("StardewValley.Program", true);
             StardewGameInfo = StardewProgramType.GetField("gamePtr");
 
@@ -253,7 +253,7 @@ namespace StardewModdingAPI
                 StardewForm.Closing += StardewForm_Closing;
 
                 ready = true;
-
+                
                 StardewGameInfo.SetValue(StardewProgramType, gamePtr);
                 gamePtr.Run();
 

@@ -23,7 +23,7 @@ namespace StardewModdingAPI.Helpers
         private bool _isMemoryStreamDirty { get; set; }
         
         private MemoryStream _modifiedAssembly;
-        private MemoryStream ModifiedAssembly
+        public MemoryStream ModifiedAssembly
         {
             get
             {
