@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.Helpers;
 using StardewModdingAPI.Inheritance;
 using StardewModdingAPI.Inheritance.Menus;
 using StardewValley;
@@ -36,8 +37,8 @@ namespace StardewModdingAPI
         public static Thread gameThread;
         public static Thread consoleInputThread;
 
-        public static bool StardewInjectorLoaded { get; private set; }
-        public static Mod StardewInjectorMod { get; private set; }
+        public static CecilContext StardewContext;
+        public static CecilContext SmapiContext;
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -52,7 +53,6 @@ namespace StardewModdingAPI
                 ConfigureUI();
                 ConfigurePaths();
                 ConfigureMethodInjection();
-                ConfigureInjector();
                 //ConfigureSDV();
 
                 //GameRunInvoker();
@@ -72,23 +72,8 @@ namespace StardewModdingAPI
         /// </summary>
         private static void ConfigureMethodInjection()
         {
-            AssemblyDefinition stardewAssembly = AssemblyDefinition.ReadAssembly(Constants.ExecutionPath + "\\Stardew Valley.exe");
-            TypeDefinition type = stardewAssembly.MainModule.Types.FirstOrDefault(n => n.FullName == "StardewValley.FarmAnimal");
-            MethodDefinition foundMethod = type.Methods.FirstOrDefault(m => m.Name == "eatGrass");
-            Mono.Cecil.Cil.ILProcessor ilProcessor = foundMethod.Body.GetILProcessor();
-
-            var smapiAssembly = Assembly.GetExecutingAssembly().GetType("StardewModdingAPI.Events.FarmAnimal");
-            var eventMethod = smapiAssembly.GetMethod("eatGrass_OnEnter");
-                        
-            AssemblyDefinition fstardewAssembly = AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location);
-            MethodReference ffoundMethod = stardewAssembly.MainModule.Import(eventMethod);
-
-            WeaveOnEnterMethod(ilProcessor, foundMethod.Body.Instructions.First(), ffoundMethod);
-            WeaveOnExitMethod(ilProcessor, foundMethod.Body.Instructions.Where(i => i.OpCode == OpCodes.Ret).ToList(), ffoundMethod);
-            
-            MemoryStream stream = new MemoryStream();
-            stardewAssembly.Write(stream);
-            Assembly.Load(stream.GetBuffer());
+            StardewContext = new CecilContext(CecilContextType.Stardew);
+            SmapiContext = new CecilContext(CecilContextType.SMAPI);
         }
 
         private static void WeaveOnEnterMethod(Mono.Cecil.Cil.ILProcessor ilProcessor, Instruction target, MethodReference callback)
@@ -150,50 +135,7 @@ namespace StardewModdingAPI
                 throw new FileNotFoundException(string.Format("Could not found: {0}\\Stardew Valley.exe", Constants.ExecutionPath));
             }
         }
-
-        /// <summary>
-        /// Load the injector.
-        /// </summary>
-        /// <remarks>
-        /// This will load the injector before anything else if it sees it
-        /// It doesn't matter though
-        /// I'll leave it as a feature in case anyone in the community wants to tinker with it
-        /// All you need is a DLL that inherits from mod and is called StardewInjector.dll with an Entry() method
-        /// </remarks>
-        private static void ConfigureInjector()
-        {
-            foreach (string ModPath in _modPaths)
-            {
-                foreach (String s in Directory.GetFiles(ModPath, "StardewInjector.dll"))
-                {
-                    StardewModdingAPI.Log.Success(ConsoleColor.Green, "Found Stardew Injector DLL: " + s);
-                    try
-                    {
-                        Assembly mod = Assembly.UnsafeLoadFrom(s); //to combat internet-downloaded DLLs
-
-                        if (mod.DefinedTypes.Count(x => x.BaseType == typeof(Mod)) > 0)
-                        {
-                            StardewModdingAPI.Log.Success("Loading Injector DLL...");
-                            TypeInfo tar = mod.DefinedTypes.First(x => x.BaseType == typeof(Mod));
-                            Mod m = (Mod)mod.CreateInstance(tar.ToString());
-                            Console.WriteLine("LOADED: {0} by {1} - Version {2} | Description: {3}", m.Name, m.Authour, m.Version, m.Description);
-                            m.Entry(false);
-                            StardewInjectorLoaded = true;
-                            StardewInjectorMod = m;
-                        }
-                        else
-                        {
-                            StardewModdingAPI.Log.Error("Invalid Mod DLL");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        StardewModdingAPI.Log.Error("Failed to load mod '{0}'. Exception details:\n" + ex, s);
-                    }
-                }
-            }
-        }
-
+        
         /// <summary>
         /// Load Stardev Valley and control features
         /// </summary>

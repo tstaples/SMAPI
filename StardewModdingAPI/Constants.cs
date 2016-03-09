@@ -21,6 +21,11 @@ namespace StardewModdingAPI
         public static string ExecutionPath => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
         /// <summary>
+        /// Execution path to execute the code.
+        /// </summary>
+        public static string StardewExePath => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\Stardew Valley.exe";
+
+        /// <summary>
         /// Title for the API console
         /// </summary>
         public static string ConsoleTitle => string.Format("Stardew Modding API Console - Version {0}", VersionString);
