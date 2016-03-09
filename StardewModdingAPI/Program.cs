@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Inheritance;
 using StardewModdingAPI.Inheritance.Menus;
@@ -52,7 +53,7 @@ namespace StardewModdingAPI
                 ConfigurePaths();
                 ConfigureMethodInjection();
                 ConfigureInjector();
-                ConfigureSDV();
+                //ConfigureSDV();
 
                 //GameRunInvoker();
             }
@@ -71,13 +72,42 @@ namespace StardewModdingAPI
         /// </summary>
         private static void ConfigureMethodInjection()
         {
-            AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(Constants.ExecutionPath + "\\Stardew Valley.exe");
-            TypeDefinition type = assembly.MainModule.Types.FirstOrDefault(n => n.FullName == "StardewValley.FarmAnimal");
-            //if (type != null)
-            //{
-                MethodDefinition foundMethod = type.Methods.FirstOrDefault(m => m.Name == "eatGrass");
-                Mono.Cecil.Cil.ILProcessor worker = foundMethod.Body.GetILProcessor();
-            //}
+            AssemblyDefinition stardewAssembly = AssemblyDefinition.ReadAssembly(Constants.ExecutionPath + "\\Stardew Valley.exe");
+            TypeDefinition type = stardewAssembly.MainModule.Types.FirstOrDefault(n => n.FullName == "StardewValley.FarmAnimal");
+            MethodDefinition foundMethod = type.Methods.FirstOrDefault(m => m.Name == "eatGrass");
+            Mono.Cecil.Cil.ILProcessor ilProcessor = foundMethod.Body.GetILProcessor();
+
+            var smapiAssembly = Assembly.GetExecutingAssembly().GetType("StardewModdingAPI.Events.FarmAnimal");
+            var eventMethod = smapiAssembly.GetMethod("eatGrass_OnEnter");
+                        
+            AssemblyDefinition fstardewAssembly = AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location);
+            MethodReference ffoundMethod = stardewAssembly.MainModule.Import(eventMethod);
+
+            WeaveOnEnterMethod(ilProcessor, foundMethod.Body.Instructions.First(), ffoundMethod);
+            WeaveOnExitMethod(ilProcessor, foundMethod.Body.Instructions.Where(i => i.OpCode == OpCodes.Ret).ToList(), ffoundMethod);
+            
+            MemoryStream stream = new MemoryStream();
+            stardewAssembly.Write(stream);
+            Assembly.Load(stream.GetBuffer());
+        }
+
+        private static void WeaveOnEnterMethod(Mono.Cecil.Cil.ILProcessor ilProcessor, Instruction target, MethodReference callback)
+        {
+            // Instruction loadNameInstruction = ilProcessor.Create(OpCodes.Ldstr, name);
+            //ilProcessor.InsertBefore(target, loadNameInstruction);
+            Instruction callEnterInstruction = ilProcessor.Create(OpCodes.Call, callback);
+            ilProcessor.InsertBefore(target, callEnterInstruction);
+        }
+
+        private static void WeaveOnExitMethod(Mono.Cecil.Cil.ILProcessor ilProcessor, List<Instruction> targets, MethodReference callback)
+        {
+            // Instruction loadNameInstruction = ilProcessor.Create(OpCodes.Ldstr, name);
+            //ilProcessor.InsertBefore(target, loadNameInstruction);
+            foreach (var returnInstruction in targets)
+            {
+                Instruction callEnterInstruction = ilProcessor.Create(OpCodes.Call, callback);
+                ilProcessor.InsertBefore(returnInstruction, callEnterInstruction);
+            }
         }
 
         /// <summary>

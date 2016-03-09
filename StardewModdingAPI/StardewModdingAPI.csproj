@@ -134,6 +134,7 @@
     <Compile Include="Entities\SPlayer.cs" />
     <Compile Include="Events\Controls.cs" />
     <Compile Include="Events\EventArgs.cs" />
+    <Compile Include="Events\FarmAnimal.cs" />
     <Compile Include="Events\Game.cs" />
     <Compile Include="Events\Graphics.cs" />
     <Compile Include="Events\Location.cs" />
