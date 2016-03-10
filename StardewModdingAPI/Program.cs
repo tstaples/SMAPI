@@ -74,30 +74,19 @@ namespace StardewModdingAPI
             StardewContext = new CecilContext(CecilContextType.Stardew);
             SmapiContext = new CecilContext(CecilContextType.SMAPI);
 
-            //StardewContext.ReplaceMethodInstruction(OpCodes.Newobj, "System.Void StardewValley.Game1::.ctor()")
-            var test = StardewContext.GetMethodILProcessor("StardewValley.Program", "Main");
-            StardewContext.GetTypeDefinition("StardewValley.Game1");
+            //StardewContext.ReplaceMethodInstruction(OpCodes.Newobj, "System.Void StardewValley.Game1::.ctor()");
+            //CecilHelper.RedirectConstructor(StardewContext, SmapiContext, "StardewValley.Program", "Main",
+            //    "StardewValley.Game1", ".ctor", "StardewModdingAPI.Inheritance.SGame", ".ctor");
+            CecilHelper.InjectExitMethod(StardewContext, SmapiContext, "StardewValley.Game1", ".ctor", "StardewModdingAPI.Program", "Test");
         }
 
-        private static void WeaveOnEnterMethod(Mono.Cecil.Cil.ILProcessor ilProcessor, Instruction target, MethodReference callback)
+        public static void Test(Game1 instance)
         {
-            // Instruction loadNameInstruction = ilProcessor.Create(OpCodes.Ldstr, name);
-            //ilProcessor.InsertBefore(target, loadNameInstruction);
-            Instruction callEnterInstruction = ilProcessor.Create(OpCodes.Call, callback);
-            ilProcessor.InsertBefore(target, callEnterInstruction);
+            var inst = instance;
+            string test = Game1.samBandName;
+            var test2 = Game1.numberOfSelectedItems;
         }
-
-        private static void WeaveOnExitMethod(Mono.Cecil.Cil.ILProcessor ilProcessor, List<Instruction> targets, MethodReference callback)
-        {
-            // Instruction loadNameInstruction = ilProcessor.Create(OpCodes.Ldstr, name);
-            //ilProcessor.InsertBefore(target, loadNameInstruction);
-            foreach (var returnInstruction in targets)
-            {
-                Instruction callEnterInstruction = ilProcessor.Create(OpCodes.Call, callback);
-                ilProcessor.InsertBefore(returnInstruction, callEnterInstruction);
-            }
-        }
-
+        
         /// <summary>
         /// Set up the console properties
         /// </summary>
@@ -119,6 +108,7 @@ namespace StardewModdingAPI
 
             _modPaths = new List<string>();
             _modContentPaths = new List<string>();
+
 
             //TODO: Have an app.config and put the paths inside it so users can define locations to load mods from
             _modPaths.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "StardewValley", "Mods"));
@@ -145,10 +135,10 @@ namespace StardewModdingAPI
         private static void ConfigureSDV()
         {
             StardewModdingAPI.Log.Info("Initializing SDV Assembly...");
-
+            
             // Load in the assembly - ignores security
-            StardewAssembly = Assembly.UnsafeLoadFrom(Constants.ExecutionPath + "\\Stardew Valley.exe");
-            //StardewAssembly = Assembly.Load(StardewContext.ModifiedAssembly.GetBuffer());
+            //StardewAssembly = Assembly.UnsafeLoadFrom(Constants.ExecutionPath + "\\Stardew Valley.exe");
+            StardewAssembly = Assembly.Load(StardewContext.ModifiedAssembly.GetBuffer());
             StardewProgramType = StardewAssembly.GetType("StardewValley.Program", true);
             StardewGameInfo = StardewProgramType.GetField("gamePtr");
             
@@ -163,7 +153,7 @@ namespace StardewModdingAPI
 
             // Wait for the game to load up
             while (!ready) ;
-
+                       
             //SDV is running
             StardewModdingAPI.Log.Comment("SDV Loaded Into Memory");
 
@@ -181,12 +171,16 @@ namespace StardewModdingAPI
             //Events.MenuChanged += Events_MenuChanged; //Idk right now
 
             StardewModdingAPI.Log.Verbose("Applying Final SDV Tweaks...");
-            StardewInvoke(() =>
-            {
-                gamePtr.IsMouseVisible = false;
-                gamePtr.Window.Title = "Stardew Valley - Version " + Game1.version;
-                StardewForm.Resize += Events.GraphicsEvents.InvokeResize;
-            });
+
+            StardewAssembly.EntryPoint.Invoke(null, new object[] { new string[] { } });
+            //StardewInvoke(() =>
+            //{
+            //    gamePtr.IsMouseVisible = false;
+            //    gamePtr.Window.Title = "Stardew Valley - Version " + Game1.version;
+            //    StardewForm.Resize += Events.GraphicsEvents.InvokeResize;
+            //});
+
+            //var test = (Game1)StardewGameInfo.GetValue(StardewProgramType);
         }
 
         /// <summary>
@@ -248,19 +242,19 @@ namespace StardewModdingAPI
 
             try
             {
-                gamePtr = new SGame();
-                StardewModdingAPI.Log.Verbose("Patching SDV Graphics Profile...");
-                Game1.graphics.GraphicsProfile = GraphicsProfile.HiDef;
-                LoadMods();
+                //gamePtr = new SGame();
+                //StardewModdingAPI.Log.Verbose("Patching SDV Graphics Profile...");
+                //Game1.graphics.GraphicsProfile = GraphicsProfile.HiDef;
+                //LoadMods();
 
-                StardewForm = Control.FromHandle(Program.gamePtr.Window.Handle).FindForm();
-                StardewForm.Closing += StardewForm_Closing;
+                //StardewForm = Control.FromHandle(Program.gamePtr.Window.Handle).FindForm();
+                //StardewForm.Closing += StardewForm_Closing;
 
                 ready = true;
 
-                StardewAssembly.EntryPoint.Invoke(null, new object[] { new string[] { } });
-                //StardewGameInfo.SetValue(StardewProgramType, gamePtr);
-                gamePtr.Run();                
+                //Game1 g1 = gamePtr as Game1;
+                //StardewGameInfo.SetValue(StardewProgramType, g1);
+                //gamePtr.Run();
             }
             catch (Exception ex)
             {

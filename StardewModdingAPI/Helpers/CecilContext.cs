@@ -100,7 +100,26 @@ namespace StardewModdingAPI.Helpers
 
             return methodDef;
         }
-        
+
+        public ConstructorInfo GetSMAPITypeContructor(string type)
+        {
+            if (_assemblyDefinition == null)
+                throw new Exception("ERROR Assembly not properly read. Cannot parse");
+
+            if (ContextType != CecilContextType.SMAPI)
+                throw new Exception("GetSMAPIMethodReference can only be called on the SMAPI context");
+
+            ConstructorInfo methodInfo = null;
+
+            var reflectionType = Assembly.GetExecutingAssembly().GetType(type);
+            if (reflectionType != null)
+            {
+                methodInfo = reflectionType.GetConstructor(Type.EmptyTypes);
+            }
+
+            return methodInfo;
+        }
+
         public MethodInfo GetSMAPIMethodReference(string type, string method)
         {
             if (_assemblyDefinition == null)
@@ -111,16 +130,16 @@ namespace StardewModdingAPI.Helpers
 
             MethodInfo methodInfo = null;
 
-            var smapiAssembly = Assembly.GetExecutingAssembly().GetType(type);
-            if (smapiAssembly != null)
+            var reflectionType = Assembly.GetExecutingAssembly().GetType(type);
+            if (reflectionType != null)
             {
-                methodInfo = smapiAssembly.GetMethod(method);
+                methodInfo = reflectionType.GetMethod(method);
             }
 
             return methodInfo;
         }
 
-        public MethodReference ImportSMAPIMethodInStardew(MethodInfo method)
+        public MethodReference ImportSMAPIMethodInStardew(CecilContext destinationContext, MethodBase method)
         {
             if (_assemblyDefinition == null)
                 throw new Exception("ERROR Assembly not properly read. Cannot parse");
@@ -131,7 +150,7 @@ namespace StardewModdingAPI.Helpers
             MethodReference reference = null;
             if (method != null)
             {                
-                reference = _assemblyDefinition.MainModule.Import(method);
+                reference = destinationContext._assemblyDefinition.MainModule.Import(method);
             }
             return reference;
         }

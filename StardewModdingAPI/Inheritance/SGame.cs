@@ -179,42 +179,9 @@ namespace StardewModdingAPI.Inheritance
         public Farmer CurrentFarmer { get { return player; } }
 
         public SGame()
-        {
-            instance = this;
-
-#if DEBUG
-            SaveGame.serializer = new XmlSerializer(typeof (SaveGame), new Type[28]
-                {
-                    typeof (Tool),
-                    typeof (GameLocation),
-                    typeof (Crow),
-                    typeof (Duggy),
-                    typeof (Bug),
-                    typeof (BigSlime),
-                    typeof (Fireball),
-                    typeof (Ghost),
-                    typeof (Child),
-                    typeof (Pet),
-                    typeof (Dog),
-                    typeof (StardewValley.Characters.Cat),
-                    typeof (Horse),
-                    typeof (GreenSlime),
-                    typeof (LavaCrab),
-                    typeof (RockCrab),
-                    typeof (ShadowGuy),
-                    typeof (SkeletonMage),
-                    typeof (SquidKid),
-                    typeof (Grub),
-                    typeof (Fly),
-                    typeof (DustSpirit),
-                    typeof (Quest),
-                    typeof (MetalHead),
-                    typeof (ShadowGirl),
-                    typeof (Monster),
-                    typeof (TerrainFeature),
-                    typeof (SObject)
-                });
-#endif
+        {            
+            instance = this;            
+            graphics.GraphicsProfile = GraphicsProfile.HiDef;
         }
 
         protected override void Initialize()
