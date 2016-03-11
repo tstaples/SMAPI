@@ -190,7 +190,7 @@ namespace StardewModdingAPI
             //Change the game's version
             StardewModdingAPI.Log.Info("Injecting New SDV Version...");
             Game1.version += "-Z_MODDED | SMAPI " + Version.VersionString;
-
+            
             //Create the thread for the game to run in.
             gameThread = new Thread(RunGame);
             StardewModdingAPI.Log.Info("Starting SDV...");
@@ -226,6 +226,8 @@ namespace StardewModdingAPI
             //Events.LocationsChanged += Events_LocationsChanged;
             //Events.CurrentLocationChanged += Events_CurrentLocationChanged;
 #endif
+
+            LoadMods();
 
             //Do tweaks using winforms invoke because I'm lazy
             StardewModdingAPI.Log.Verbose("Applying Final SDV Tweaks...");
@@ -291,7 +293,6 @@ namespace StardewModdingAPI
                 gamePtr = new SGame();
                 StardewModdingAPI.Log.Verbose("Patching SDV Graphics Profile...");
                 Game1.graphics.GraphicsProfile = GraphicsProfile.HiDef;
-                LoadMods();
 
                 StardewForm = Control.FromHandle(Program.gamePtr.Window.Handle).FindForm();
                 StardewForm.Closing += StardewForm_Closing;
@@ -344,7 +345,7 @@ namespace StardewModdingAPI
             {
                 foreach (String modPath in Directory.GetDirectories(ModPath))
                 {
-                    var modJsonFiles = Directory.GetFiles(modPath, "*.json");
+                    var modJsonFiles = Directory.GetFiles(modPath, "manifest.json");
                     if (modJsonFiles.Any())
                     {
                         if (modJsonFiles.Length > 1)
@@ -360,7 +361,7 @@ namespace StardewModdingAPI
                             string json = r.ReadToEnd();
                             ModInfo modInfo = JsonConvert.DeserializeObject<ModInfo>(json);
                             modInfo.ModRoot = modPath;
-
+                            
                             if (modInfo != null)
                             {
                                 if (modInfo.HasDLL)
@@ -376,14 +377,15 @@ namespace StardewModdingAPI
                                         StardewModdingAPI.Log.Error("Failed to load Mod DLL.");
                                     }
                                 }
+                                if(modInfo.HasContent)
+                                {
+                                    modInfo.LoadContent();
+                                }
                             }
                         }
                     }
-                    else
-                    {
-                        //Support for older mods here
-                    }
                 }
+
                 foreach (String s in Directory.GetFiles(ModPath, "*.dll"))
                 {
                     if (s.Contains("StardewInjector"))
@@ -433,15 +435,15 @@ namespace StardewModdingAPI
             DebugPixel.SetData(new Color[] { Color.White });
 
 #if DEBUG
-            StardewModdingAPI.Log.Verbose("REGISTERING BASE CUSTOM ITEM");
-            SObject so = new SObject();
-            so.Name = "Mario Block";
-            so.CategoryName = "SMAPI Test Mod";
-            so.Description = "It's a block from Mario!\nLoaded in realtime by SMAPI.";
-            so.Texture = Texture2D.FromStream(Game1.graphics.GraphicsDevice, new FileStream(ModContentPaths[0] + "\\Test.png", FileMode.Open));
-            so.IsPassable = false;
-            so.IsPlaceable = true;
-            StardewModdingAPI.Log.Verbose("REGISTERED WITH ID OF: " + SGame.RegisterModItem(so));
+            //StardewModdingAPI.Log.Verbose("REGISTERING BASE CUSTOM ITEM");
+            //SObject so = new SObject();
+            //so.Name = "Mario Block";
+            //so.CategoryName = "SMAPI Test Mod";
+            //so.Description = "It's a block from Mario!\nLoaded in realtime by SMAPI.";
+            //so.Texture = Texture2D.FromStream(Game1.graphics.GraphicsDevice, new FileStream(ModContentPaths[0] + "\\Test.png", FileMode.Open));
+            //so.IsPassable = false;
+            //so.IsPlaceable = true;
+            //StardewModdingAPI.Log.Verbose("REGISTERED WITH ID OF: " + SGame.RegisterModItem(so));
 
             //StardewModdingAPI.Log.Verbose("REGISTERING SECOND CUSTOM ITEM");
             //SObject so2 = new SObject();
@@ -453,7 +455,7 @@ namespace StardewModdingAPI
             //so2.IsPlaceable = true;
             //StardewModdingAPI.Log.Verbose("REGISTERED WITH ID OF: " + SGame.RegisterModItem(so2));
 
-            Command.CallCommand("load");
+            //Command.CallCommand("load");
 #endif
         }
 
