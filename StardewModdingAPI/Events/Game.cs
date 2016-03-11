@@ -17,7 +17,7 @@ namespace StardewModdingAPI.Events
         {
             GameLoaded.Invoke(null, EventArgs.Empty);
         }
-
+        
         public static void InvokeInitialize()
         {
             try

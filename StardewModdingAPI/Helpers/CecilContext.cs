@@ -154,5 +154,10 @@ namespace StardewModdingAPI.Helpers
             }
             return reference;
         }
+
+        internal void WriteAssembly(string file)
+        {
+            _assemblyDefinition.Write(file);
+        }
     }
 }

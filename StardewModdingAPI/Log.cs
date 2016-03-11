@@ -79,6 +79,16 @@ namespace StardewModdingAPI
         /// <param name="values"></param>
         public static void Comment(object message, params object[] values)
         {
+            Log.PrintLog(message?.ToString(), false, values);
+        }
+
+        /// <summary>
+        /// Additional comment to display to console and logging.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="values"></param>
+        public static void Warning(object message, params object[] values)
+        {
             Console.ForegroundColor = ConsoleColor.Yellow;
             Log.PrintLog(message?.ToString(), false, values);
             Console.ForegroundColor = ConsoleColor.Gray;

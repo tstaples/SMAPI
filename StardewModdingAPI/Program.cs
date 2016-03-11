@@ -26,7 +26,15 @@ namespace StardewModdingAPI
 
         public static Texture2D DebugPixel { get; private set; }
 
-        public static SGame gamePtr;
+        private static object modifiedAssemblyGame;
+        //public static Game1 gamePtr;
+        public static Game1 gamePtr
+        {
+            get
+            {
+                return modifiedAssemblyGame.MemberwiseCast<Game1>();
+            }
+        }
         public static bool ready;
 
         public static Assembly StardewAssembly;
@@ -78,13 +86,18 @@ namespace StardewModdingAPI
             //CecilHelper.RedirectConstructor(StardewContext, SmapiContext, "StardewValley.Program", "Main",
             //    "StardewValley.Game1", ".ctor", "StardewModdingAPI.Inheritance.SGame", ".ctor");
             CecilHelper.InjectExitMethod(StardewContext, SmapiContext, "StardewValley.Game1", ".ctor", "StardewModdingAPI.Program", "Test");
+            CecilHelper.InjectExitMethod(StardewContext, SmapiContext, "StardewValley.Game1", "Initialize", "StardewModdingAPI.Events.GameEvents", "InvokeInitialize");
+            CecilHelper.InjectExitMethod(StardewContext, SmapiContext, "StardewValley.Game1", "LoadContent", "StardewModdingAPI.Events.GameEvents", "InvokeLoadContent");
+            CecilHelper.InjectExitMethod(StardewContext, SmapiContext, "StardewValley.Game1", "Update", "StardewModdingAPI.Events.GameEvents", "InvokeUpdateTick");
+            CecilHelper.InjectExitMethod(StardewContext, SmapiContext, "StardewValley.Game1", "Draw", "StardewModdingAPI.Events.GraphicsEvents", "InvokeDrawTick");
+            //TODO - Invoke Resize
+
+
         }
 
-        public static void Test(Game1 instance)
+        public static void Test(object instance)
         {
-            var inst = instance;
-            string test = Game1.samBandName;
-            var test2 = Game1.numberOfSelectedItems;
+            modifiedAssemblyGame = instance;
         }
         
         /// <summary>
@@ -135,9 +148,8 @@ namespace StardewModdingAPI
         private static void ConfigureSDV()
         {
             StardewModdingAPI.Log.Info("Initializing SDV Assembly...");
-            
+
             // Load in the assembly - ignores security
-            //StardewAssembly = Assembly.UnsafeLoadFrom(Constants.ExecutionPath + "\\Stardew Valley.exe");
             StardewAssembly = Assembly.Load(StardewContext.ModifiedAssembly.GetBuffer());
             StardewProgramType = StardewAssembly.GetType("StardewValley.Program", true);
             StardewGameInfo = StardewProgramType.GetField("gamePtr");
@@ -164,12 +176,7 @@ namespace StardewModdingAPI
             // The only command in the API (at least it should be, for now)
             Command.RegisterCommand("help", "Lists all commands | 'help <cmd>' returns command description").CommandFired += help_CommandFired;
             //Command.RegisterCommand("crash", "crashes sdv").CommandFired += delegate { Game1.player.draw(null); };
-
-            //Subscribe to events
-            Events.ControlEvents.KeyPressed += Events_KeyPressed;
-            Events.GameEvents.LoadContent += Events_LoadContent;
-            //Events.MenuChanged += Events_MenuChanged; //Idk right now
-
+            
             StardewModdingAPI.Log.Verbose("Applying Final SDV Tweaks...");
 
             StardewAssembly.EntryPoint.Invoke(null, new object[] { new string[] { } });
@@ -242,19 +249,7 @@ namespace StardewModdingAPI
 
             try
             {
-                //gamePtr = new SGame();
-                //StardewModdingAPI.Log.Verbose("Patching SDV Graphics Profile...");
-                //Game1.graphics.GraphicsProfile = GraphicsProfile.HiDef;
-                //LoadMods();
-
-                //StardewForm = Control.FromHandle(Program.gamePtr.Window.Handle).FindForm();
-                //StardewForm.Closing += StardewForm_Closing;
-
                 ready = true;
-
-                //Game1 g1 = gamePtr as Game1;
-                //StardewGameInfo.SetValue(StardewProgramType, g1);
-                //gamePtr.Run();
             }
             catch (Exception ex)
             {
@@ -322,73 +317,7 @@ namespace StardewModdingAPI
                 Command.CallCommand(Console.ReadLine());
             }
         }
-
-        static void Events_LoadContent(object o, EventArgs e)
-        {
-            StardewModdingAPI.Log.Info("Initializing Debug Assets...");
-            DebugPixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1);
-            DebugPixel.SetData(new Color[] { Color.White });
-
-#if DEBUG
-            StardewModdingAPI.Log.Verbose("REGISTERING BASE CUSTOM ITEM");
-            SObject so = new SObject();
-            so.Name = "Mario Block";
-            so.CategoryName = "SMAPI Test Mod";
-            so.Description = "It's a block from Mario!\nLoaded in realtime by SMAPI.";
-            so.Texture = Texture2D.FromStream(Game1.graphics.GraphicsDevice, new FileStream(_modContentPaths[0] + "\\Test.png", FileMode.Open));
-            so.IsPassable = true;
-            so.IsPlaceable = true;
-            StardewModdingAPI.Log.Verbose("REGISTERED WITH ID OF: " + SGame.RegisterModItem(so));
-
-            //StardewModdingAPI.Log.Verbose("REGISTERING SECOND CUSTOM ITEM");
-            //SObject so2 = new SObject();
-            //so2.Name = "Mario Painting";
-            //so2.CategoryName = "SMAPI Test Mod";
-            //so2.Description = "It's a painting of a creature from Mario!\nLoaded in realtime by SMAPI.";
-            //so2.Texture = Texture2D.FromStream(Game1.graphics.GraphicsDevice, new FileStream(_modContentPaths[0] + "\\PaintingTest.png", FileMode.Open));
-            //so2.IsPassable = true;
-            //so2.IsPlaceable = true;
-            //StardewModdingAPI.Log.Verbose("REGISTERED WITH ID OF: " + SGame.RegisterModItem(so2));
-
-            Command.CallCommand("load");
-#endif
-        }
-
-        static void Events_KeyPressed(object o, EventArgsKeyPressed e)
-        {
-
-        }
-
-        static void Events_MenuChanged(IClickableMenu newMenu)
-        {
-            StardewModdingAPI.Log.Verbose("NEW MENU: " + newMenu.GetType());
-            if (newMenu is GameMenu)
-            {
-                Game1.activeClickableMenu = SGameMenu.ConstructFromBaseClass(Game1.activeClickableMenu as GameMenu);
-            }
-        }
-
-
-        static void Events_LocationsChanged(List<GameLocation> newLocations)
-        {
-#if DEBUG
-            SGame.ModLocations = SGameLocation.ConstructFromBaseClasses(Game1.locations);
-#endif
-        }
-
-        static void Events_CurrentLocationChanged(GameLocation newLocation)
-        {
-            //SGame.CurrentLocation = null;
-            //System.Threading.Thread.Sleep(10);
-#if DEBUG
-            Console.WriteLine(newLocation.name);
-            SGame.CurrentLocation = SGame.LoadOrCreateSGameLocationFromName(newLocation.name);
-#endif
-            //Game1.currentLocation = SGame.CurrentLocation;
-            //Log.LogComment(((SGameLocation) newLocation).name);
-            //Log.LogComment("LOC CHANGED: " + SGame.currentLocation.name);
-        }
-
+    
         public static void StardewInvoke(Action a)
         {
             StardewForm.Invoke(a);

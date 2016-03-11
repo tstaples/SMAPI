@@ -125,6 +125,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="API\Game.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Entities\SCharacter.cs" />

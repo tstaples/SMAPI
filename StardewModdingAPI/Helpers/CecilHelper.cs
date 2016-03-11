@@ -16,15 +16,18 @@ namespace StardewModdingAPI.Helpers
         
         private static void InjectMethod(ILProcessor ilProcessor, Instruction target, MethodReference method)
         {
-            var callTarget = target;
+            Instruction callEnterInstruction = ilProcessor.Create(OpCodes.Call, method);
             if (method.HasParameters)
             {
                 Instruction loadObjInstruction = ilProcessor.Create(OpCodes.Ldarg_0);
                 ilProcessor.InsertBefore(target, loadObjInstruction);
-                callTarget = loadObjInstruction;
+                ilProcessor.InsertAfter(loadObjInstruction, callEnterInstruction);
             }
-            Instruction callEnterInstruction = ilProcessor.Create(OpCodes.Call, method);
-            ilProcessor.InsertAfter(callTarget, callEnterInstruction);
+            else
+            {
+                ilProcessor.InsertBefore(target, callEnterInstruction);
+            }
+            
         }
 
         private static void InjectMethod(ILProcessor ilProcessor, IEnumerable<Instruction> targets, MethodReference method)
