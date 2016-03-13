@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace StardewModdingAPI.API
 {
-    public class Game
+    class Game
     {
+
     }
 }

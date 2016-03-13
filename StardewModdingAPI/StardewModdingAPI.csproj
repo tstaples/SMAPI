@@ -73,8 +73,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <OutputPath>bin\x86\Debug\</OutputPath>
     <Prefer32Bit>false</Prefer32Bit>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants>DEBUG</DefineConstants>
     <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
@@ -106,7 +105,7 @@
       <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Stardew Valley, Version=1.0.5905.5747, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="Stardew Valley, Version=1.0.5912.41135, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Games\SteamLibrary\steamapps\common\Stardew Valley\Stardew Valley.exe</HintPath>
     </Reference>
@@ -119,8 +118,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="xTile, Version=2.0.4.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="xTile">
       <HintPath>..\..\..\..\Games\SteamLibrary\steamapps\common\Stardew Valley\xTile.dll</HintPath>
     </Reference>
   </ItemGroup>
@@ -143,10 +141,13 @@
     <Compile Include="Events\Mine.cs" />
     <Compile Include="Events\Player.cs" />
     <Compile Include="Events\Time.cs" />
+    <Compile Include="ExtensionMethods\Array.cs" />
+    <Compile Include="ExtensionMethods\Object.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Helpers\CecilContext.cs" />
     <Compile Include="Helpers\CecilHelper.cs" />
     <Compile Include="Helpers\ReflectionHelper.cs" />
+    <Compile Include="Helpers\StardewAssembly.cs" />
     <Compile Include="Inheritance\ItemStackChange.cs" />
     <Compile Include="Inheritance\Menus\SBobberBar.cs" />
     <Compile Include="Inheritance\Menus\SGameMenu.cs" />
@@ -163,9 +164,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <Content Include="Manifest Resources\Microsoft.Xna.Framework.RuntimeProfile.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

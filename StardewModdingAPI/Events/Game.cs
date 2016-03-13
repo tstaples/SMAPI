@@ -46,6 +46,8 @@ namespace StardewModdingAPI.Events
         {
             try
             {
+                Program.IsGameReferenceDirty = true;
+                var test = Program.gamePtr;
                 UpdateTick.Invoke(null, EventArgs.Empty);
             }
             catch (Exception ex)

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.ExtensionMethods;
 using StardewModdingAPI.Helpers;
 using StardewModdingAPI.Inheritance;
 using StardewModdingAPI.Inheritance.Menus;
@@ -26,27 +27,31 @@ namespace StardewModdingAPI
 
         public static Texture2D DebugPixel { get; private set; }
 
-        private static object modifiedAssemblyGame;
-        //public static Game1 gamePtr;
+        public static bool IsGameReferenceDirty { get; set; }
+
+        public static object gameInst;
+
+        public static Game1 _gamePtr;
         public static Game1 gamePtr
         {
             get
             {
-                return modifiedAssemblyGame.MemberwiseCast<Game1>();
+                if(IsGameReferenceDirty && gameInst != null)
+                {
+                    _gamePtr = gameInst.Copy<Game1>();
+                }
+                return _gamePtr;
             }
         }
+
         public static bool ready;
 
-        public static Assembly StardewAssembly;
-        public static Type StardewProgramType;
-        public static FieldInfo StardewGameInfo;
         public static Form StardewForm;
 
         public static Thread gameThread;
         public static Thread consoleInputThread;
 
-        public static CecilContext StardewContext;
-        public static CecilContext SmapiContext;
+        
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -79,27 +84,20 @@ namespace StardewModdingAPI
         /// </summary>
         private static void ConfigureMethodInjection()
         {
-            StardewContext = new CecilContext(CecilContextType.Stardew);
-            SmapiContext = new CecilContext(CecilContextType.SMAPI);
+            StardewAssembly.ModifyStardewAssembly();
 
-            //StardewContext.ReplaceMethodInstruction(OpCodes.Newobj, "System.Void StardewValley.Game1::.ctor()");
-            //CecilHelper.RedirectConstructor(StardewContext, SmapiContext, "StardewValley.Program", "Main",
-            //    "StardewValley.Game1", ".ctor", "StardewModdingAPI.Inheritance.SGame", ".ctor");
-            CecilHelper.InjectExitMethod(StardewContext, SmapiContext, "StardewValley.Game1", ".ctor", "StardewModdingAPI.Program", "Test");
-            CecilHelper.InjectExitMethod(StardewContext, SmapiContext, "StardewValley.Game1", "Initialize", "StardewModdingAPI.Events.GameEvents", "InvokeInitialize");
-            CecilHelper.InjectExitMethod(StardewContext, SmapiContext, "StardewValley.Game1", "LoadContent", "StardewModdingAPI.Events.GameEvents", "InvokeLoadContent");
-            CecilHelper.InjectExitMethod(StardewContext, SmapiContext, "StardewValley.Game1", "Update", "StardewModdingAPI.Events.GameEvents", "InvokeUpdateTick");
-            CecilHelper.InjectExitMethod(StardewContext, SmapiContext, "StardewValley.Game1", "Draw", "StardewModdingAPI.Events.GraphicsEvents", "InvokeDrawTick");
-            //TODO - Invoke Resize
-
-
+#if DEBUG
+            StardewAssembly.WriteModifiedExe();
+#endif
         }
+
 
         public static void Test(object instance)
         {
-            modifiedAssemblyGame = instance;
+            gameInst = instance;
+            IsGameReferenceDirty = true;
         }
-        
+
         /// <summary>
         /// Set up the console properties
         /// </summary>
@@ -138,7 +136,8 @@ namespace StardewModdingAPI
 
             if (!File.Exists(Constants.ExecutionPath + "\\Stardew Valley.exe"))
             {
-                throw new FileNotFoundException(string.Format("Could not found: {0}\\Stardew Valley.exe", Constants.ExecutionPath));
+                StardewModdingAPI.Log.Error("Replace this");
+                //throw new FileNotFoundException(string.Format("Could not found: {0}\\Stardew Valley.exe", Constants.ExecutionPath));
             }
         }
         
@@ -150,44 +149,26 @@ namespace StardewModdingAPI
             StardewModdingAPI.Log.Info("Initializing SDV Assembly...");
 
             // Load in the assembly - ignores security
-            StardewAssembly = Assembly.Load(StardewContext.ModifiedAssembly.GetBuffer());
-            StardewProgramType = StardewAssembly.GetType("StardewValley.Program", true);
-            StardewGameInfo = StardewProgramType.GetField("gamePtr");
-            
+            StardewAssembly.LoadStardewAssembly();
+            StardewModdingAPI.Log.Comment("SDV Loaded Into Memory");
+
             // Change the game's version
             StardewModdingAPI.Log.Verbose("Injecting New SDV Version...");
             Game1.version += string.Format("-Z_MODDED | SMAPI {0}", Constants.VersionString);
 
             // Create the thread for the game to run in.
-            gameThread = new Thread(RunGame);
-            StardewModdingAPI.Log.Info("Starting SDV...");
-            gameThread.Start();
-
-            // Wait for the game to load up
-            while (!ready) ;
-                       
-            //SDV is running
-            StardewModdingAPI.Log.Comment("SDV Loaded Into Memory");
+            Application.ThreadException += StardewModdingAPI.Log.Application_ThreadException;
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+            AppDomain.CurrentDomain.UnhandledException += StardewModdingAPI.Log.CurrentDomain_UnhandledException;
+                              
 
             //Create definition to listen for input
             StardewModdingAPI.Log.Verbose("Initializing Console Input Thread...");
             consoleInputThread = new Thread(ConsoleInputThread);
-
-            // The only command in the API (at least it should be, for now)
-            Command.RegisterCommand("help", "Lists all commands | 'help <cmd>' returns command description").CommandFired += help_CommandFired;
-            //Command.RegisterCommand("crash", "crashes sdv").CommandFired += delegate { Game1.player.draw(null); };
             
-            StardewModdingAPI.Log.Verbose("Applying Final SDV Tweaks...");
+            Command.RegisterCommand("help", "Lists all commands | 'help <cmd>' returns command description").CommandFired += help_CommandFired;            
 
-            StardewAssembly.EntryPoint.Invoke(null, new object[] { new string[] { } });
-            //StardewInvoke(() =>
-            //{
-            //    gamePtr.IsMouseVisible = false;
-            //    gamePtr.Window.Title = "Stardew Valley - Version " + Game1.version;
-            //    StardewForm.Resize += Events.GraphicsEvents.InvokeResize;
-            //});
-
-            //var test = (Game1)StardewGameInfo.GetValue(StardewProgramType);
+            StardewAssembly.Launch(); 
         }
 
         /// <summary>
@@ -241,21 +222,6 @@ namespace StardewModdingAPI
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        public static void RunGame()
-        {
-            Application.ThreadException += StardewModdingAPI.Log.Application_ThreadException;
-            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
-            AppDomain.CurrentDomain.UnhandledException += StardewModdingAPI.Log.CurrentDomain_UnhandledException;
-
-            try
-            {
-                ready = true;
-            }
-            catch (Exception ex)
-            {
-                StardewModdingAPI.Log.Error("Game failed to start: " + ex);
-            }
-        }
 
         static void StardewForm_Closing(object sender, CancelEventArgs e)
         {
