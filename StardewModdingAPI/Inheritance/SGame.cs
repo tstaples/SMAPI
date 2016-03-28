@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI.Events;
-using StardewModdingAPI.Input;
+using StardewModdingAPI.EventManagers;
 using StardewValley;
 using StardewValley.BellsAndWhistles;
 using StardewValley.Locations;
@@ -33,10 +33,10 @@ namespace StardewModdingAPI.Inheritance
         /// <summary>
         /// Gets a jagged array of all buttons pressed on the gamepad the prior frame.
         /// </summary>
-        [Obsolete("Please use inputManager.PreviouslyPressedButtons")]
-        public Buttons[][] PreviouslyPressedButtons => inputManager.PreviouslyPressedButtons;
+        [Obsolete("Please use controlEventsManager.PreviouslyPressedButtons")]
+        public Buttons[][] PreviouslyPressedButtons => controlEventsManager.PreviouslyPressedButtons;
 
-        public InputManager inputManager;
+        public ControlEventsManager controlEventsManager;
 
         internal SGame()
         {
@@ -55,49 +55,49 @@ namespace StardewModdingAPI.Inheritance
         /// <summary>
         /// The current KeyboardState
         /// </summary>
-        [Obsolete("Please use inputManager.KStateNow.")]
-        public KeyboardState KStateNow => inputManager.KStateNow;
+        [Obsolete("Please use controlEventsManager.KStateNow.")]
+        public KeyboardState KStateNow => controlEventsManager.KStateNow;
         /// <summary>
         /// The prior KeyboardState
         /// </summary>
-        [Obsolete("Please use inputManager.KStatePrior.")]
-        public KeyboardState KStatePrior => inputManager.KStatePrior;
+        [Obsolete("Please use controlEventsManager.KStatePrior.")]
+        public KeyboardState KStatePrior => controlEventsManager.KStatePrior;
 
         /// <summary>
         /// The current MouseState
         /// </summary>
-        [Obsolete("Please use inputManager.MStateNow.")]
-        public MouseState MStateNow => inputManager.MStateNow;
+        [Obsolete("Please use controlEventsManager.MStateNow.")]
+        public MouseState MStateNow => controlEventsManager.MStateNow;
 
         /// <summary>
         /// The prior MouseState
         /// </summary>
-        [Obsolete("Please use inputManager.MStatePrior.")]
-        public MouseState MStatePrior => inputManager.MStatePrior;
+        [Obsolete("Please use controlEventsManager.MStatePrior.")]
+        public MouseState MStatePrior => controlEventsManager.MStatePrior;
 
         /// <summary>
         /// All keys pressed on the current frame
         /// </summary>
-        [Obsolete("Please use inputManager.CurrentlyPressedKeys.")]
-        public Keys[] CurrentlyPressedKeys => inputManager.CurrentlyPressedKeys;
+        [Obsolete("Please use controlEventsManager.CurrentlyPressedKeys.")]
+        public Keys[] CurrentlyPressedKeys => controlEventsManager.CurrentlyPressedKeys;
 
         /// <summary>
         /// All keys pressed on the prior frame
         /// </summary>
-        [Obsolete("Please use inputManager.PreviouslyPressedKeys.")]
-        public Keys[] PreviouslyPressedKeys => inputManager.PreviouslyPressedKeys;
+        [Obsolete("Please use controlEventsManager.PreviouslyPressedKeys.")]
+        public Keys[] PreviouslyPressedKeys => controlEventsManager.PreviouslyPressedKeys;
 
         /// <summary>
         /// All keys pressed on this frame except for the ones pressed on the prior frame
         /// </summary>
-        [Obsolete("Please use inputManager.FramePressedKeys.")]
-        public Keys[] FramePressedKeys => inputManager.FramePressedKeys;
+        [Obsolete("Please use controlEventsManager.FramePressedKeys.")]
+        public Keys[] FramePressedKeys => controlEventsManager.FramePressedKeys;
 
         /// <summary>
         /// All keys pressed on the prior frame except for the ones pressed on the current frame
         /// </summary>
-        [Obsolete("Please use inputManager.FrameReleasedKeys.")]
-        public Keys[] FrameReleasedKeys => inputManager.FrameReleasedKeys;
+        [Obsolete("Please use controlEventsManager.FrameReleasedKeys.")]
+        public Keys[] FrameReleasedKeys => controlEventsManager.FrameReleasedKeys;
         #endregion
 
         /// <summary>
@@ -277,8 +277,8 @@ namespace StardewModdingAPI.Inheritance
 
             //PreviouslyPressedButtons = new Buttons[4][];
             //for (var i = 0; i < 4; ++i) PreviouslyPressedButtons[i] = new Buttons[0];
-            inputManager = new InputManager();
-            inputManager.Initialize();
+            controlEventsManager = new ControlEventsManager();
+            controlEventsManager.Initialize();
 
             base.Initialize();
             GameEvents.InvokeInitialize();
@@ -309,12 +309,12 @@ namespace StardewModdingAPI.Inheritance
                 InvokeBasePrivateInstancedMethod("Window_ClientSizeChanged", null, null);
             }
 
-            if (inputManager.FramePressedKeys.Contains(Keys.F3))
+            if (controlEventsManager.FramePressedKeys.Contains(Keys.F3))
             {
                 Debug = !Debug;
             }
 
-            if (inputManager.FramePressedKeys.Contains(Keys.F2))
+            if (controlEventsManager.FramePressedKeys.Contains(Keys.F2))
             {
                 //Built-in debug mode
                 debugMode = !debugMode;
@@ -659,7 +659,7 @@ namespace StardewModdingAPI.Inheritance
             if (CurrentUpdateTick >= 60)
                 CurrentUpdateTick = 0;
 
-            inputManager.Update();
+            controlEventsManager.Update();
         }
 
         /// <summary>
@@ -1253,7 +1253,7 @@ namespace StardewModdingAPI.Inheritance
 
         private void UpdateEventCalls()
         {
-            inputManager.UpdateEventCalls();
+            controlEventsManager.UpdateEventCalls();
 
             if (activeClickableMenu != null && activeClickableMenu != PreviousActiveMenu)
             {

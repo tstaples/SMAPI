@@ -5,9 +5,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI.Events;
 
-namespace StardewModdingAPI.Input
+namespace StardewModdingAPI.EventManagers
 {
-    public class InputManager
+    public class ControlEventsManager
     {
         /// <summary>
         /// Gets a jagged array of all buttons pressed on the gamepad the prior frame.
