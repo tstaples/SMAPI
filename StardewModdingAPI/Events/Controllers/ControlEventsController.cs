@@ -61,7 +61,10 @@ namespace StardewModdingAPI.Events.Controllers
         public override void Initialize()
         {
             PreviouslyPressedButtons = new Buttons[4][];
-            for (var i = 0; i < 4; ++i) PreviouslyPressedButtons[i] = new Buttons[0];
+            for (int i = 0; i < 4; ++i)
+            {
+                PreviouslyPressedButtons[i] = new Buttons[0];
+            }
         }
 
         public override void Update()
@@ -69,7 +72,7 @@ namespace StardewModdingAPI.Events.Controllers
             if (KStatePrior != KStateNow)
                 KStatePrior = KStateNow;
 
-            for (var i = PlayerIndex.One; i <= PlayerIndex.Four; i++)
+            for (PlayerIndex i = PlayerIndex.One; i <= PlayerIndex.Four; i++)
             {
                 PreviouslyPressedButtons[(int)i] = GetButtonsDown(i);
             }
@@ -81,16 +84,16 @@ namespace StardewModdingAPI.Events.Controllers
 
             MStateNow = Mouse.GetState();
 
-            foreach (var k in FramePressedKeys)
+            foreach (Keys k in FramePressedKeys)
                 ControlEvents.InvokeKeyPressed(k);
 
-            foreach (var k in FrameReleasedKeys)
+            foreach (Keys k in FrameReleasedKeys)
                 ControlEvents.InvokeKeyReleased(k);
 
-            for (var i = PlayerIndex.One; i <= PlayerIndex.Four; i++)
+            for (PlayerIndex i = PlayerIndex.One; i <= PlayerIndex.Four; i++)
             {
-                var buttons = GetFramePressedButtons(i);
-                foreach (var b in buttons)
+                Buttons[] buttons = GetFramePressedButtons(i);
+                foreach (Buttons b in buttons)
                 {
                     if (b == Buttons.LeftTrigger || b == Buttons.RightTrigger)
                     {
@@ -105,7 +108,7 @@ namespace StardewModdingAPI.Events.Controllers
 
             for (var i = PlayerIndex.One; i <= PlayerIndex.Four; i++)
             {
-                foreach (var b in GetFrameReleasedButtons(i))
+                foreach (Buttons b in GetFrameReleasedButtons(i))
                 {
                     if (b == Buttons.LeftTrigger || b == Buttons.RightTrigger)
                     {
@@ -186,8 +189,8 @@ namespace StardewModdingAPI.Events.Controllers
         /// <returns></returns>
         public Buttons[] GetButtonsDown(PlayerIndex index)
         {
-            var state = GamePad.GetState(index);
-            var buttons = new List<Buttons>();
+            GamePadState state = GamePad.GetState(index);
+            List<Buttons> buttons = new List<Buttons>();
             if (state.IsConnected)
             {
                 if (state.Buttons.A == ButtonState.Pressed) buttons.Add(Buttons.A);
@@ -218,8 +221,8 @@ namespace StardewModdingAPI.Events.Controllers
         /// <returns></returns>
         public Buttons[] GetFramePressedButtons(PlayerIndex index)
         {
-            var state = GamePad.GetState(index);
-            var buttons = new List<Buttons>();
+            GamePadState state = GamePad.GetState(index);
+            List<Buttons> buttons = new List<Buttons>();
             if (state.IsConnected)
             {
                 if (WasButtonJustPressed(Buttons.A, state.Buttons.A, index)) buttons.Add(Buttons.A);
@@ -250,8 +253,8 @@ namespace StardewModdingAPI.Events.Controllers
         /// <returns></returns>
         public Buttons[] GetFrameReleasedButtons(PlayerIndex index)
         {
-            var state = GamePad.GetState(index);
-            var buttons = new List<Buttons>();
+            GamePadState state = GamePad.GetState(index);
+            List<Buttons> buttons = new List<Buttons>();
             if (state.IsConnected)
             {
                 if (WasButtonJustReleased(Buttons.A, state.Buttons.A, index)) buttons.Add(Buttons.A);
