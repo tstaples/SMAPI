@@ -7,7 +7,7 @@ using StardewModdingAPI.Events;
 
 namespace StardewModdingAPI.EventManagers
 {
-    public class ControlEventsManager
+    public class ControlEventsController : AbstractEventController
     {
         /// <summary>
         /// Gets a jagged array of all buttons pressed on the gamepad the prior frame.
@@ -53,13 +53,13 @@ namespace StardewModdingAPI.EventManagers
         /// </summary>
         public Keys[] FrameReleasedKeys => PreviouslyPressedKeys.Except(CurrentlyPressedKeys).ToArray();
 
-        public void Initialize()
+        public override void Initialize()
         {
             PreviouslyPressedButtons = new Buttons[4][];
             for (var i = 0; i < 4; ++i) PreviouslyPressedButtons[i] = new Buttons[0];
         }
 
-        public void Update()
+        public override void Update()
         {
             if (KStatePrior != KStateNow)
                 KStatePrior = KStateNow;
@@ -70,7 +70,7 @@ namespace StardewModdingAPI.EventManagers
             }
         }
 
-        public void UpdateEventCalls()
+        public override void UpdateEventCalls()
         {
             KStateNow = Keyboard.GetState();
 
