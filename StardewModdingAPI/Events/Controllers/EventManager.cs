@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using StardewModdingAPI.Inheritance;
 
-namespace StardewModdingAPI.EventManagers
+namespace StardewModdingAPI.Events.Controllers
 {
     public class EventManager
     {

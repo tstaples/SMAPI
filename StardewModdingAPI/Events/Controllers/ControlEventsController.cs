@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Inheritance;
 
-namespace StardewModdingAPI.EventManagers
+namespace StardewModdingAPI.Events.Controllers
 {
     public class ControlEventsController : AbstractEventController
     {

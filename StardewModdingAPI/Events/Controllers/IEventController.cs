@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace StardewModdingAPI.EventManagers
+namespace StardewModdingAPI.Events.Controllers
 {
     public interface IEventController
     {
