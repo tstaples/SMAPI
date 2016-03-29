@@ -43,6 +43,7 @@ namespace StardewModdingAPI.Events.Controllers
             {
                 throw new Exception("An event controller of type \"" + eventController.GetType().ToString() + "\" already exists.");
             }
+
             eventControllers[eventController.GetType()] = eventController;
         }
 

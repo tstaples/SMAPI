@@ -30,21 +30,20 @@ namespace StardewModdingAPI.Inheritance
 
         private bool FireLoadedGameEvent;
 
-        /// <summary>
-        /// Gets a jagged array of all buttons pressed on the gamepad the prior frame.
-        /// </summary>
-        [Obsolete("Please use controlEventsController.PreviouslyPressedButtons")]
-        public Buttons[][] PreviouslyPressedButtons => controlEventsController.PreviouslyPressedButtons;
-
+        // Note: kept to prevent a bunch of ugly casts in obsolete input.
         public ControlEventsController controlEventsController; // TODO: remove
+
+        /// <summary>
+        /// Manages all the event controllers which fire corresponding events.
+        /// </summary>
         public EventManager eventManager;
 
         internal SGame()
         {
             Instance = this;
-            FirstUpdate = true;
 
             eventManager = new EventManager();
+            eventManager.RegisterEventController(new GameEventsController(this));
             eventManager.RegisterEventController(new ControlEventsController(this));
 
             // Temp for compatibility with having input members in this class.
@@ -59,6 +58,12 @@ namespace StardewModdingAPI.Inheritance
         public static Dictionary<int, SObject> ModItems { get; private set; }
 
         #region obsolete_input
+        /// <summary>
+        /// Gets a jagged array of all buttons pressed on the gamepad the prior frame.
+        /// </summary>
+        [Obsolete("Please use controlEventsController.PreviouslyPressedButtons")]
+        public Buttons[][] PreviouslyPressedButtons => controlEventsController.PreviouslyPressedButtons;
+
         /// <summary>
         /// The current KeyboardState
         /// </summary>
@@ -205,16 +210,6 @@ namespace StardewModdingAPI.Inheritance
         public Farmer PreviousFarmer { get; private set; }
 
         /// <summary>
-        /// The current index of the update tick. Recycles every 60th tick to 0. (Int32 between 0 and 59)
-        /// </summary>
-        public int CurrentUpdateTick { get; private set; }
-
-        /// <summary>
-        /// Whether or not this update frame is the very first of the entire game
-        /// </summary>
-        public bool FirstUpdate { get; private set; }
-
-        /// <summary>
         /// The current RenderTarget in Game1 (Private field, uses reflection)
         /// </summary>
         public RenderTarget2D Screen
@@ -282,6 +277,7 @@ namespace StardewModdingAPI.Inheritance
             //ModItems = new Dictionary<int, SObject>();
             DebugMessageQueue = new Queue<string>();
 
+            // Run init logic on all the event controllers.
             eventManager.Initialize();
 
             base.Initialize();
@@ -633,35 +629,6 @@ namespace StardewModdingAPI.Inheritance
                     Console.ReadKey();
                 }
             }
-
-            GameEvents.InvokeUpdateTick();
-            if (FirstUpdate)
-            {
-                GameEvents.InvokeFirstUpdateTick();
-                FirstUpdate = false;
-            }
-
-            if (CurrentUpdateTick % 2 == 0)
-                GameEvents.InvokeSecondUpdateTick();
-
-            if (CurrentUpdateTick % 4 == 0)
-                GameEvents.InvokeFourthUpdateTick();
-
-            if (CurrentUpdateTick % 8 == 0)
-                GameEvents.InvokeEighthUpdateTick();
-
-            if (CurrentUpdateTick % 15 == 0)
-                GameEvents.InvokeQuarterSecondTick();
-
-            if (CurrentUpdateTick % 30 == 0)
-                GameEvents.InvokeHalfSecondTick();
-
-            if (CurrentUpdateTick % 60 == 0)
-                GameEvents.InvokeOneSecondTick();
-
-            CurrentUpdateTick += 1;
-            if (CurrentUpdateTick >= 60)
-                CurrentUpdateTick = 0;
 
             eventManager.Update();
         }
@@ -1257,7 +1224,7 @@ namespace StardewModdingAPI.Inheritance
 
         private void UpdateEventCalls()
         {
-            eventManager.Update();
+            eventManager.UpdateEventCalls();
 
             if (activeClickableMenu != null && activeClickableMenu != PreviousActiveMenu)
             {
