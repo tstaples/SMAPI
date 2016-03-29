@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.Inheritance;
 
 namespace StardewModdingAPI.EventManagers
 {
@@ -52,6 +53,10 @@ namespace StardewModdingAPI.EventManagers
         /// All keys pressed on the prior frame except for the ones pressed on the current frame
         /// </summary>
         public Keys[] FrameReleasedKeys => PreviouslyPressedKeys.Except(CurrentlyPressedKeys).ToArray();
+
+        public ControlEventsController(SGame game) : base (game)
+        {
+        }
 
         public override void Initialize()
         {

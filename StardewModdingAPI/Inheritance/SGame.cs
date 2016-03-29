@@ -45,7 +45,7 @@ namespace StardewModdingAPI.Inheritance
             FirstUpdate = true;
 
             eventManager = new EventManager();
-            eventManager.RegisterEventController(new ControlEventsController());
+            eventManager.RegisterEventController(new ControlEventsController(this));
 
             // Temp for compatibility with having input members in this class.
             controlEventsController = (ControlEventsController)eventManager.GetEventController<ControlEventsController>();

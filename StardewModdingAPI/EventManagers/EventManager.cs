@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using StardewModdingAPI.Inheritance;
 
 namespace StardewModdingAPI.EventManagers
 {
