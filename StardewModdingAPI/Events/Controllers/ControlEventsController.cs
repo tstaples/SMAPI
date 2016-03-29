@@ -54,10 +54,18 @@ namespace StardewModdingAPI.Events.Controllers
         /// </summary>
         public Keys[] FrameReleasedKeys => PreviouslyPressedKeys.Except(CurrentlyPressedKeys).ToArray();
 
+
+        private delegate void TriggerCallback(PlayerIndex p, Buttons b, float f);
+        private delegate void ButtonCallback(PlayerIndex p, Buttons b);
+        private delegate Buttons[] GetButtons(PlayerIndex i);
+
         public ControlEventsController(SGame game) : base (game)
         {
         }
 
+        /// <summary>
+        /// Initializes the internal members used for checking states.
+        /// </summary>
         public override void Initialize()
         {
             PreviouslyPressedButtons = new Buttons[4][];
@@ -67,6 +75,9 @@ namespace StardewModdingAPI.Events.Controllers
             }
         }
 
+        /// <summary>
+        /// Updates the internal members used for checking states.
+        /// </summary>
         public override void Update()
         {
             if (KStatePrior != KStateNow)
@@ -78,10 +89,12 @@ namespace StardewModdingAPI.Events.Controllers
             }
         }
 
+        /// <summary>
+        /// Invokes the ControlEvents that satisfy their conditions.
+        /// </summary>
         public override void UpdateEventCalls()
         {
             KStateNow = Keyboard.GetState();
-
             MStateNow = Mouse.GetState();
 
             foreach (Keys k in FramePressedKeys)
@@ -90,37 +103,10 @@ namespace StardewModdingAPI.Events.Controllers
             foreach (Keys k in FrameReleasedKeys)
                 ControlEvents.InvokeKeyReleased(k);
 
-            for (PlayerIndex i = PlayerIndex.One; i <= PlayerIndex.Four; i++)
-            {
-                Buttons[] buttons = GetFramePressedButtons(i);
-                foreach (Buttons b in buttons)
-                {
-                    if (b == Buttons.LeftTrigger || b == Buttons.RightTrigger)
-                    {
-                        ControlEvents.InvokeTriggerPressed(i, b, b == Buttons.LeftTrigger ? GamePad.GetState(i).Triggers.Left : GamePad.GetState(i).Triggers.Right);
-                    }
-                    else
-                    {
-                        ControlEvents.InvokeButtonPressed(i, b);
-                    }
-                }
-            }
-
-            for (var i = PlayerIndex.One; i <= PlayerIndex.Four; i++)
-            {
-                foreach (Buttons b in GetFrameReleasedButtons(i))
-                {
-                    if (b == Buttons.LeftTrigger || b == Buttons.RightTrigger)
-                    {
-                        ControlEvents.InvokeTriggerReleased(i, b, b == Buttons.LeftTrigger ? GamePad.GetState(i).Triggers.Left : GamePad.GetState(i).Triggers.Right);
-                    }
-                    else
-                    {
-                        ControlEvents.InvokeButtonReleased(i, b);
-                    }
-                }
-            }
-
+            // Just checks trigger and button presses for now.
+            // TODO: analog sticks
+            CheckGamePad(GetFramePressedButtons, ControlEvents.InvokeTriggerPressed, ControlEvents.InvokeButtonPressed);
+            CheckGamePad(GetFrameReleasedButtons, ControlEvents.InvokeTriggerReleased, ControlEvents.InvokeButtonReleased);
 
             if (KStateNow != KStatePrior)
             {
@@ -131,6 +117,31 @@ namespace StardewModdingAPI.Events.Controllers
             {
                 ControlEvents.InvokeMouseChanged(MStatePrior, MStateNow);
                 MStatePrior = MStateNow;
+            }
+        }
+
+        /// <summary>
+        /// Checks the state of every player's gamepad buttons/triggers and fires the corresponding events.
+        /// </summary>
+        /// <param name="getButtons">Method returning the set of buttons to check.</param>
+        /// <param name="triggerCallback">Callback to invoked when the trigger condition is met.</param>
+        /// <param name="buttonCallback">Callback to invoke when the button condition is met.</param>
+        private void CheckGamePad(GetButtons getButtons, TriggerCallback triggerCallback, ButtonCallback buttonCallback)
+        {
+            for (PlayerIndex i = PlayerIndex.One; i <= PlayerIndex.Four; i++)
+            {
+                Buttons[] buttons = getButtons(i);
+                foreach (Buttons b in buttons)
+                {
+                    if (b == Buttons.LeftTrigger || b == Buttons.RightTrigger)
+                    {
+                        triggerCallback(i, b, b == Buttons.LeftTrigger ? GamePad.GetState(i).Triggers.Left : GamePad.GetState(i).Triggers.Right);
+                    }
+                    else
+                    {
+                        buttonCallback(i, b);
+                    }
+                }
             }
         }
 

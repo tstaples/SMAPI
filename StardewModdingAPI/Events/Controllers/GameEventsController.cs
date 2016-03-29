@@ -20,11 +20,17 @@ namespace StardewModdingAPI.Events.Controllers
         {
         }
 
+        /// <summary>
+        /// Initializes the internal members used for checking states.
+        /// </summary>
         public override void Initialize()
         {
             FirstUpdate = true;
         }
 
+        /// <summary>
+        /// Updates the internal members used for checking states.
+        /// </summary>
         public override void Update()
         {
             GameEvents.InvokeUpdateTick();
@@ -57,9 +63,12 @@ namespace StardewModdingAPI.Events.Controllers
                 CurrentUpdateTick = 0;
         }
 
+        /// <summary>
+        /// Invokes the ControlEvents that satisfy their conditions.
+        /// </summary>
         public override void UpdateEventCalls()
         {
-
+            // Empty
         }
     }
 }
